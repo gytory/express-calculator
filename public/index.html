@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Простой калькулятор</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .calculator {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Простой калькулятор API</h1>
+    
+    <div class="calculator">
+        <h2>Тестирование API</h2>
+        
+        <input type="number" id="num1" placeholder="Первое число" value="10">
+        <input type="number" id="num2" placeholder="Второе число" value="5">
+        
+        <select id="operation">
+            <option value="add">Сложение (+)</option>
+            <option value="subtract">Вычитание (-)</option>
+            <option value="multiply">Умножение (*)</option>
+            <option value="divide">Деление (/)</option>
+        </select>
+        
+        <button onclick="calculate('GET')">GET запрос</button>
+        <button onclick="calculate('POST')">POST запрос</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+    
+    <script>
+        async function calculate(method) {
+            const num1 = document.getElementById('num1').value;
+            const num2 = document.getElementById('num2').value;
+            const operation = document.getElementById('operation').value;
+            
+            let url, options;
+            
+            if (method === 'GET') {
+                // GET запрос с query параметрами
+                url = `/api/calc?num1=${num1}&num2=${num2}&operation=${operation}`;
+                options = {
+                    method: 'GET'
+                };
+            } else {
+                // POST запрос с JSON телом
+                url = '/api/calc';
+                options = {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ num1, num2, operation })
+                };
+            }
+            
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <h3>Результат:</h3>
+                        <p>Операция: ${data.operation}</p>
+                        <p>${data.num1} ${getOperator(data.operation)} ${data.num2} = <strong>${data.result}</strong></p>
+                        <p>Время: ${new Date(data.timestamp).toLocaleString()}</p>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <h3>Ошибка:</h3>
+                        <p style="color: red;">${data.error}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>Ошибка соединения:</h3>
+                    <p style="color: red;">${error.message}</p>
+                `;
+            }
+        }
+        
+        function getOperator(operation) {
+            switch(operation) {
+                case 'add': return '+';
+                case 'subtract': return '-';
+                case 'multiply': return '*';
+                case 'divide': return '/';
+                default: return '?';
+            }
+        }
+    </script>
+</body>
+</html>
